@@ -5,6 +5,9 @@
 
 #pragma once
 
+// Std header files:
+#include <vector>
+
 // Windows Header Files:
 #include <windows.h>
 #include <propvarutil.h>
@@ -20,7 +23,10 @@
 #include <nserror.h>
 #include <winmeta.h>
 #include <wrl.h>
+#include <winrt/base.h>
 #include <d3d9types.h>
+
+//Kinect header files
 #include <k4a/k4a.h>
 
 using namespace Microsoft::WRL;

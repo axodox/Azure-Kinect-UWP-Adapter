@@ -33,6 +33,9 @@
     <ClCompile Include="dllMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="KinectMediaTypeCollection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SimpleMediaSource.h">
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectMediaTypeCollection.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
