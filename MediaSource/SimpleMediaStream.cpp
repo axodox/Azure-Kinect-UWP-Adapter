@@ -263,7 +263,7 @@ SimpleMediaStream::RequestSample(
     GUID_NULL,
     S_OK,
     sample.Get()));
-
+  
   return hr;
 }
 

@@ -7,6 +7,9 @@
 
 // Std header files:
 #include <vector>
+#include <unordered_map>
+#include <mutex>
+#include <chrono>
 
 // Windows Header Files:
 #include <windows.h>
@@ -23,11 +26,14 @@
 #include <nserror.h>
 #include <winmeta.h>
 #include <wrl.h>
-#include <winrt/base.h>
 #include <d3d9types.h>
+#include <dxgiformat.h>
+#include <queue>
+#include <winrt/base.h>
 
 //Kinect header files
 #include <k4a/k4a.h>
+#pragma comment (lib, "k4a.lib")
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;

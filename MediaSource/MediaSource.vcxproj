@@ -48,27 +48,11 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="$(Configuration)=='Debug'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
+    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="$(Configuration)=='Release'" Label="Configuration">
     <UseDebugLibraries>false</UseDebugLibraries>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
-  </PropertyGroup>
-  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Driver_SpectreMitigation>Spectre</Driver_SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -85,7 +69,9 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
-    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);;..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\build\native\include</IncludePath>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\build\native\include</IncludePath>
+    <LibraryPath Condition="$(Platform)=='x86'">$(VCToolsInstallDir)lib\Spectre\onecore\$(DDKPlatform);$(LibraryPath);..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\lib\native\x86\release</LibraryPath>
+    <LibraryPath Condition="$(Platform)=='x64'">$(VCToolsInstallDir)lib\Spectre\onecore\$(DDKPlatform);$(LibraryPath);..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\lib\native\amd64\release</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -117,13 +103,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllMain.cpp" />
-    <ClCompile Include="KinectMediaTypeCollection.cpp" />
+    <ClCompile Include="KinectMediaSource.cpp" />
+    <ClCompile Include="KinectMediaSteam.cpp" />
+    <ClCompile Include="KinectStreamDescription.cpp" />
+    <ClCompile Include="MediaFoundationHelpers.cpp" />
     <ClCompile Include="SimpleMediaSource.cpp" />
     <ClCompile Include="SimpleMediaStream.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KinectMediaTypeCollection.h" />
+    <ClInclude Include="Hasher.h" />
+    <ClInclude Include="KinectMediaSource.h" />
+    <ClInclude Include="KinectMediaSteam.h" />
+    <ClInclude Include="KinectStreamDescription.h" />
+    <ClInclude Include="MediaFoundationHelpers.h" />
     <ClInclude Include="SimpleMediaSource.h" />
     <ClInclude Include="SimpleMediaStream.h" />
     <ClInclude Include="stdafx.h" />
