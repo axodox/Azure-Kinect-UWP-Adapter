@@ -21,6 +21,7 @@
 #include <winmeta.h>
 #include <wrl.h>
 #include <d3d9types.h>
+#include <k4a/k4a.h>
 
 using namespace Microsoft::WRL;
 using namespace Microsoft::WRL::Wrappers;
