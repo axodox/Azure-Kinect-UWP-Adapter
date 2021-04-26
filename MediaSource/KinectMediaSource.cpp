@@ -85,6 +85,8 @@ namespace k4u
     lock_guard<mutex> lock(_mutex);
     _isShutdown = true;
 
+    Stop();
+
     _eventQueue = nullptr;
     _presentationDescriptor = nullptr;
     _attributes = nullptr;
@@ -101,11 +103,15 @@ namespace k4u
     if (!presentationDescriptor || !startPosition) return E_INVALIDARG;
     if (timeFormat != nullptr && *timeFormat != GUID_NULL) return MF_E_UNSUPPORTED_TIME_FORMAT;
 
-    _isRunning = true;
+    auto count = k4a_device_get_installed_count();
+    if (count == 0) return MF_E_NOT_AVAILABLE;
+
+    if (k4a_device_open(K4A_DEVICE_DEFAULT, &_device) != K4A_RESULT_SUCCEEDED) return MF_E_VIDEO_DEVICE_LOCKED;
 
     try
     {
       auto cameraConfiguration = KinectStreamDescription::CreateCameraConfiguration(presentationDescriptor);
+      if (k4a_device_start_cameras(_device, &cameraConfiguration) != K4A_RESULT_SUCCEEDED) return E_INVALIDARG;
 
       PROPVARIANT startTime;
       check_hresult(InitPropVariantFromInt64(MFGetSystemTime(), &startTime));
@@ -143,6 +149,9 @@ namespace k4u
         }
       }
 
+      _workerThread = thread([&] { RunCapture(); });
+
+      _isRunning = true;
       return S_OK;
     }
     catch (...)
@@ -157,10 +166,15 @@ namespace k4u
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (!_isRunning) return MF_E_INVALID_STATE_TRANSITION;
 
-    _isRunning = false;
-
     try
     {
+      _isRunning = false;
+      if (_workerThread.joinable())
+      {
+        _workerThread.join();
+      }
+      k4a_device_close(_device);
+
       PROPVARIANT stopTime;
       check_hresult(InitPropVariantFromInt64(MFGetSystemTime(), &stopTime));
 
@@ -184,6 +198,7 @@ namespace k4u
       }
 
       check_hresult(_eventQueue->QueueEventParamVar(MESourceStopped, GUID_NULL, S_OK, &stopTime));
+
       return S_OK;
     }
     catch (...)
@@ -257,16 +272,49 @@ namespace k4u
 
   void KinectMediaSource::InitializeAttributes()
   {
+    com_ptr<IMFSensorProfileCollection> profileCollection;
+    check_hresult(MFCreateSensorProfileCollection(profileCollection.put()));
+
     com_ptr<IMFSensorProfile> profile;
     check_hresult(MFCreateSensorProfile(KSCAMERAPROFILE_Legacy, 0, nullptr, profile.put()));
     profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))");
     profile->AddProfileFilter(1, L"((RES==;FRT<=30,1;SUT==))");
+    profileCollection->AddProfile(profile.get());
 
-    com_ptr<IMFSensorProfileCollection> profileCollection;
-    check_hresult(MFCreateSensorProfileCollection(profileCollection.put()));
+    profile = nullptr;
+    check_hresult(MFCreateSensorProfile(KSCAMERAPROFILE_VideoRecording, 1, nullptr, profile.put()));
+    profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))");
+    profile->AddProfileFilter(1, L"((RES==;FRT<=30,1;SUT==))");
     profileCollection->AddProfile(profile.get());
 
     check_hresult(MFCreateAttributes(_attributes.put(), 1));
     check_hresult(_attributes->SetUnknown(MF_DEVICEMFT_SENSORPROFILE_COLLECTION, profileCollection.get()));
+  }
+
+  void KinectMediaSource::RunCapture()
+  {
+    k4a_capture_t capture{};
+    while (_isRunning)
+    {
+      if (k4a_device_get_capture(_device, &capture, 1000) != K4A_WAIT_RESULT_SUCCEEDED) continue;
+
+      for (auto& [type, stream] : _streams)
+      {
+        k4a_image_t image;
+        switch (type)
+        {
+        case KinectStreamType::Color:
+          image = k4a_capture_get_color_image(capture);
+          break;          
+        case KinectStreamType::Depth:
+          image = k4a_capture_get_depth_image(capture);
+          break;
+        }
+
+        stream->Update(image);
+      }
+
+      k4a_capture_release(capture);
+    }
   }
 }

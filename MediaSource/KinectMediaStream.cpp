@@ -25,7 +25,7 @@ namespace k4u
     check_hresult(mediaType->GetGUID(MF_MT_SUBTYPE, reinterpret_cast<GUID*>(&_format)));
 
     uint32_t framerateNumerator, framerateDenominator;
-    MFGetAttributeRatio(mediaType.get(), MF_MT_FRAME_RATE, &framerateNumerator, &framerateDenominator);
+    check_hresult(MFGetAttributeRatio(mediaType.get(), MF_MT_FRAME_RATE, &framerateNumerator, &framerateDenominator));
 
     _sampleDuration = duration<uint32_t>(framerateDenominator);
     _sampleDuration /= framerateNumerator;
@@ -137,6 +137,8 @@ namespace k4u
 
     if (token) token->AddRef();
     _sampleRequestTokens.emplace(com_ptr<IUnknown>(token, take_ownership_from_abi));
+    if (_sampleRequestTokens.size() > 10) _sampleRequestTokens.pop();
+
     return S_OK;
   }
 }

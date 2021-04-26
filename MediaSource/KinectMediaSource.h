@@ -51,9 +51,12 @@ namespace k4u
     winrt::com_ptr<IMFPresentationDescriptor> _presentationDescriptor;
     winrt::com_ptr<IMFAttributes> _attributes;
     std::unordered_map<KinectStreamType, winrt::com_ptr<KinectMediaStream>> _streams;
+    k4a_device_t _device{};
+    std::thread _workerThread;
     bool _isShutdown = false;
     bool _isRunning = false;
 
     void InitializeAttributes();
+    void RunCapture();
   };
 }
