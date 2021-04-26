@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "KinectMediaSource.h"
-#include "KinectStreamDescription.h"
 
 using namespace std;
 using namespace winrt;
@@ -88,20 +87,111 @@ namespace k4u
 
     _eventQueue = nullptr;
     _presentationDescriptor = nullptr;
+    _attributes = nullptr;
+    _streams.clear();
 
     return S_OK;
   }
 
-  HRESULT __stdcall KinectMediaSource::Start(IMFPresentationDescriptor* pPresentationDescriptor, const GUID* pguidTimeFormat, const PROPVARIANT* pvarStartPosition) noexcept
+  HRESULT __stdcall KinectMediaSource::Start(IMFPresentationDescriptor* presentationDescriptor, const GUID* timeFormat, const PROPVARIANT* startPosition) noexcept
   {
-    return E_NOTIMPL;
+    lock_guard<mutex> lock(_mutex);
+    if (_isShutdown) return MF_E_SHUTDOWN;
+    if (_isRunning) return MF_E_INVALID_STATE_TRANSITION;
+    if (!presentationDescriptor || !startPosition) return E_INVALIDARG;
+    if (timeFormat != nullptr && *timeFormat != GUID_NULL) return MF_E_UNSUPPORTED_TIME_FORMAT;
+
+    _isRunning = true;
+
+    try
+    {
+      auto cameraConfiguration = KinectStreamDescription::CreateCameraConfiguration(presentationDescriptor);
+
+      PROPVARIANT startTime;
+      check_hresult(InitPropVariantFromInt64(MFGetSystemTime(), &startTime));
+      check_hresult(_eventQueue->QueueEventParamVar(MESourceStarted, GUID_NULL, S_OK, &startTime));
+
+      unsigned long streamCount;
+      check_hresult(_presentationDescriptor->GetStreamDescriptorCount(&streamCount));
+
+      unsigned long descriptorCount;
+      check_hresult(presentationDescriptor->GetStreamDescriptorCount(&descriptorCount));
+
+      for (unsigned long descriptorIndex = 0; descriptorIndex < descriptorCount; descriptorIndex++)
+      {
+        com_ptr<IMFStreamDescriptor> streamDescriptor;
+        int isSelected;
+        check_hresult(presentationDescriptor->GetStreamDescriptorByIndex(descriptorIndex, &isSelected, streamDescriptor.put()));
+
+        unsigned long streamIndex = 0; //In our case stream index and stream ID is the same
+        check_hresult(streamDescriptor->GetStreamIdentifier(&streamIndex));
+        if (streamIndex >= streamCount) return MF_E_INVALIDSTREAMNUMBER;
+        
+        if (isSelected)
+        {
+          check_hresult(_presentationDescriptor->SelectStream(streamIndex));
+
+          auto stream = make_self<KinectMediaStream>(get_strong().as<IMFMediaSource>(), streamDescriptor);
+          check_hresult(_eventQueue->QueueEventParamUnk(MENewStream, GUID_NULL, S_OK, stream.as<IUnknown>().get()));
+          check_hresult(stream->QueueEvent(MEStreamStarted, GUID_NULL, S_OK, &startTime));
+          
+          _streams.emplace((KinectStreamType)descriptorIndex, move(stream));
+        }
+        else
+        {
+          check_hresult(_presentationDescriptor->DeselectStream(streamIndex));
+        }
+      }
+
+      return S_OK;
+    }
+    catch (...)
+    {
+      return to_hresult();
+    }
   }
 
   HRESULT __stdcall KinectMediaSource::Stop() noexcept
   {
-    return E_NOTIMPL;
+    lock_guard<mutex> lock(_mutex);
+    if (_isShutdown) return MF_E_SHUTDOWN;
+    if (!_isRunning) return MF_E_INVALID_STATE_TRANSITION;
+
+    _isRunning = false;
+
+    try
+    {
+      PROPVARIANT stopTime;
+      check_hresult(InitPropVariantFromInt64(MFGetSystemTime(), &stopTime));
+
+      unsigned long streamCount;
+      check_hresult(_presentationDescriptor->GetStreamDescriptorCount(&streamCount));
+
+      for (unsigned long streamIndex = 0; streamIndex < streamCount; streamIndex++)
+      {
+        com_ptr<IMFStreamDescriptor> streamDescriptor;
+        int isSelected;
+        check_hresult(_presentationDescriptor->GetStreamDescriptorByIndex(streamIndex, &isSelected, streamDescriptor.put()));
+
+        if (isSelected)
+        {
+          _presentationDescriptor->DeselectStream(streamIndex);
+
+          auto& stream = _streams.at((KinectStreamType)streamIndex);
+          stream->QueueEvent(MEStreamStopped, GUID_NULL, S_OK, &stopTime);
+          _streams.erase((KinectStreamType)streamIndex);
+        }
+      }
+
+      check_hresult(_eventQueue->QueueEventParamVar(MESourceStopped, GUID_NULL, S_OK, &stopTime));
+      return S_OK;
+    }
+    catch (...)
+    {
+      return to_hresult();
+    }
   }
-  
+
   HRESULT __stdcall KinectMediaSource::GetSourceAttributes(IMFAttributes** attributes) noexcept
   {
     lock_guard<mutex> lock(_mutex);
@@ -116,7 +206,7 @@ namespace k4u
   {
     lock_guard<mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
-    if(!attributes) return E_POINTER;
+    if (!attributes) return E_POINTER;
 
     try
     {
@@ -127,7 +217,7 @@ namespace k4u
       com_ptr<IMFStreamDescriptor> streamDescriptor;
       int isSelected;
       check_hresult(_presentationDescriptor->GetStreamDescriptorByIndex(streamIdentifier, &isSelected, streamDescriptor.put()));
-      
+
       streamDescriptor.as<IMFAttributes>().copy_to(attributes);
       return S_OK;
     }
@@ -164,7 +254,7 @@ namespace k4u
   {
     return HRESULT_FROM_WIN32(ERROR_SET_NOT_FOUND);
   }
-  
+
   void KinectMediaSource::InitializeAttributes()
   {
     com_ptr<IMFSensorProfile> profile;

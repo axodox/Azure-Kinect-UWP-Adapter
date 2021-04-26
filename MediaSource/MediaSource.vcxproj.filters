@@ -12,7 +12,7 @@
     <ClCompile Include="KinectStreamDescription.cpp">
       <Filter>Kinect</Filter>
     </ClCompile>
-    <ClCompile Include="KinectMediaSteam.cpp">
+    <ClCompile Include="KinectMediaStream.cpp">
       <Filter>Kinect</Filter>
     </ClCompile>
     <ClCompile Include="KinectMediaSource.cpp">
@@ -29,7 +29,7 @@
     <ClInclude Include="KinectStreamDescription.h">
       <Filter>Kinect</Filter>
     </ClInclude>
-    <ClInclude Include="KinectMediaSteam.h">
+    <ClInclude Include="KinectMediaStream.h">
       <Filter>Kinect</Filter>
     </ClInclude>
     <ClInclude Include="KinectMediaSource.h">

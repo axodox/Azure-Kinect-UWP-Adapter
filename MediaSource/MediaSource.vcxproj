@@ -104,7 +104,7 @@
   <ItemGroup>
     <ClCompile Include="dllMain.cpp" />
     <ClCompile Include="KinectMediaSource.cpp" />
-    <ClCompile Include="KinectMediaSteam.cpp" />
+    <ClCompile Include="KinectMediaStream.cpp" />
     <ClCompile Include="KinectStreamDescription.cpp" />
     <ClCompile Include="MediaFoundationHelpers.cpp" />
     <ClCompile Include="SimpleMediaSource.cpp" />
@@ -114,7 +114,7 @@
   <ItemGroup>
     <ClInclude Include="Hasher.h" />
     <ClInclude Include="KinectMediaSource.h" />
-    <ClInclude Include="KinectMediaSteam.h" />
+    <ClInclude Include="KinectMediaStream.h" />
     <ClInclude Include="KinectStreamDescription.h" />
     <ClInclude Include="MediaFoundationHelpers.h" />
     <ClInclude Include="SimpleMediaSource.h" />

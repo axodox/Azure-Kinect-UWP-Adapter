@@ -3,13 +3,13 @@
 
 namespace k4u
 {
-  class KinectMediaSteam : public winrt::implements<
-    KinectMediaSteam,
+  class KinectMediaStream : public winrt::implements<
+    KinectMediaStream,
     IMFMediaEventGenerator,
     IMFMediaStream>
   {
   public:
-    KinectMediaSteam(const winrt::com_ptr<IMFMediaSource>& parent, const winrt::com_ptr<IMFStreamDescriptor>& streamDescriptor);
+    KinectMediaStream(const winrt::com_ptr<IMFMediaSource>& parent, const winrt::com_ptr<IMFStreamDescriptor>& streamDescriptor);
 
     void Update(const k4a_image_t& image);
 

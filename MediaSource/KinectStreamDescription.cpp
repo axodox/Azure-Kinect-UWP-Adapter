@@ -36,6 +36,134 @@ namespace k4u
     return result;
   }
 
+  k4a_device_configuration_t KinectStreamDescription::CreateCameraConfiguration(IMFPresentationDescriptor* presentationDescriptor)
+  {
+    k4a_device_configuration_t configuration{};
+
+    unsigned long streamCount;
+    check_hresult(presentationDescriptor->GetStreamDescriptorCount(&streamCount));
+
+    uint32_t maxFps = 0;
+    for (unsigned long streamId = 0; streamId < streamCount; streamId++)
+    {
+      com_ptr<IMFStreamDescriptor> streamDescriptor;
+      int isSelected;
+      check_hresult(presentationDescriptor->GetStreamDescriptorByIndex(streamId, &isSelected, streamDescriptor.put()));
+
+      com_ptr<IMFMediaTypeHandler> mediaTypeHandler;
+      check_hresult(streamDescriptor->GetMediaTypeHandler(mediaTypeHandler.put()));
+
+      com_ptr<IMFMediaType> mediaType;
+      check_hresult(mediaTypeHandler->GetCurrentMediaType(mediaType.put()));
+
+      guid format;
+      check_hresult(mediaType->GetGUID(MF_MT_SUBTYPE, reinterpret_cast<GUID*>(&format)));
+
+      uint32_t width, height;
+      check_hresult(MFGetAttributeSize(mediaType.get(), MF_MT_FRAME_SIZE, &width, &height));
+
+      uint32_t fpsNumerator, fpsDenominator;
+      check_hresult(MFGetAttributeRatio(mediaType.get(), MF_MT_FRAME_RATE, &fpsNumerator, &fpsDenominator));
+
+      if (format == guid(MFVideoFormat_D16)) //depth
+      {
+        if (isSelected)
+        {
+          switch (height)
+          {
+          case 288:
+            configuration.depth_mode = k4a_depth_mode_t::K4A_DEPTH_MODE_NFOV_2X2BINNED;
+            break;
+          case 576:
+            configuration.depth_mode = k4a_depth_mode_t::K4A_DEPTH_MODE_NFOV_UNBINNED;
+            break;
+          case 512:
+            configuration.depth_mode = k4a_depth_mode_t::K4A_DEPTH_MODE_WFOV_2X2BINNED;
+            break;
+          case 1024:
+            configuration.depth_mode = k4a_depth_mode_t::K4A_DEPTH_MODE_WFOV_UNBINNED;
+            break;
+          default:
+            throw hresult_out_of_bounds(L"Invalid depth mode!");
+          }
+        }
+      }
+      else //color
+      {
+        if (isSelected)
+        {
+          switch (height)
+          {
+          case 720:
+            configuration.color_resolution = k4a_color_resolution_t::K4A_COLOR_RESOLUTION_720P;
+            break;
+          case 1080:
+            configuration.color_resolution = k4a_color_resolution_t::K4A_COLOR_RESOLUTION_1080P;
+            break;
+          case 1440:
+            configuration.color_resolution = k4a_color_resolution_t::K4A_COLOR_RESOLUTION_1440P;
+            break;
+          case 1536:
+            configuration.color_resolution = k4a_color_resolution_t::K4A_COLOR_RESOLUTION_1536P;
+            break;
+          case 2160:
+            configuration.color_resolution = k4a_color_resolution_t::K4A_COLOR_RESOLUTION_2160P;
+            break;
+          case 3072:
+            configuration.color_resolution = k4a_color_resolution_t::K4A_COLOR_RESOLUTION_3072P;
+            break;
+          default:
+            throw hresult_out_of_bounds(L"Invalid color resolution!");
+          }
+
+          if (format == guid(MFVideoFormat_RGB32))
+          {
+            configuration.color_format = K4A_IMAGE_FORMAT_COLOR_BGRA32;
+          }
+          else if (format == guid(MFVideoFormat_MJPG))
+          {
+            configuration.color_format = K4A_IMAGE_FORMAT_COLOR_MJPG;
+          }
+          else if (format == guid(MFVideoFormat_NV12))
+          {
+            configuration.color_format = K4A_IMAGE_FORMAT_COLOR_NV12;
+          }
+          else if (format == guid(MFVideoFormat_YUY2))
+          {
+            configuration.color_format = K4A_IMAGE_FORMAT_COLOR_YUY2;
+          }
+          else
+          {
+            throw hresult_out_of_bounds(L"Invalid color format!");
+          }
+        }
+      }
+
+      auto fps = fpsNumerator / fpsDenominator;
+      if (isSelected && fps > maxFps)
+      {
+        maxFps = fps;
+      }
+    }
+
+    switch (maxFps)
+    {
+    case 30:
+      configuration.camera_fps = k4a_fps_t::K4A_FRAMES_PER_SECOND_30;
+      break;
+    case 15:
+      configuration.camera_fps = k4a_fps_t::K4A_FRAMES_PER_SECOND_15;
+      break;
+    case 5:
+      configuration.camera_fps = k4a_fps_t::K4A_FRAMES_PER_SECOND_5;
+      break;
+    default:
+      throw hresult_out_of_bounds(L"Invalid camera framerate!");
+    }
+
+    return configuration;
+  }
+
   KinectStreamDescription::operator const winrt::com_ptr<IMFStreamDescriptor>& () const
   {
     return _streamDescriptor;

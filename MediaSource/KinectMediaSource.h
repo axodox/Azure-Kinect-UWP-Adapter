@@ -1,5 +1,7 @@
 #pragma once
 #include "stdafx.h"
+#include "KinectStreamDescription.h"
+#include "KinectMediaStream.h"
 
 namespace k4u
 {
@@ -27,7 +29,7 @@ namespace k4u
     virtual HRESULT __stdcall GetCharacteristics(DWORD* characteristics) noexcept override;
     virtual HRESULT __stdcall Pause() noexcept override;
     virtual HRESULT __stdcall Shutdown() noexcept override;
-    virtual HRESULT __stdcall Start(IMFPresentationDescriptor* pPresentationDescriptor, const GUID* pguidTimeFormat, const PROPVARIANT* pvarStartPosition) noexcept override;
+    virtual HRESULT __stdcall Start(IMFPresentationDescriptor* presentationDescriptor, const GUID* timeFormat, const PROPVARIANT* startPosition) noexcept override;
     virtual HRESULT __stdcall Stop() noexcept override;
 
     //IMFMediaSourceEx
@@ -48,7 +50,9 @@ namespace k4u
     winrt::com_ptr<IMFMediaEventQueue> _eventQueue;
     winrt::com_ptr<IMFPresentationDescriptor> _presentationDescriptor;
     winrt::com_ptr<IMFAttributes> _attributes;
+    std::unordered_map<KinectStreamType, winrt::com_ptr<KinectMediaStream>> _streams;
     bool _isShutdown = false;
+    bool _isRunning = false;
 
     void InitializeAttributes();
   };

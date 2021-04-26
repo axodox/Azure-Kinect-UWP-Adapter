@@ -17,6 +17,7 @@ namespace k4u
     operator const winrt::com_ptr<IMFStreamDescriptor>&() const;
 
     static winrt::com_ptr<IMFPresentationDescriptor> CreatePresentationDescription();
+    static k4a_device_configuration_t CreateCameraConfiguration(IMFPresentationDescriptor* presentationDescriptor);
 
   private:
     struct MediaTypeKey

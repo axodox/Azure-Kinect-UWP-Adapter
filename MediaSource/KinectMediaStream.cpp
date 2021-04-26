@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "KinectMediaSteam.h"
+#include "KinectMediaStream.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -7,7 +7,7 @@ using namespace winrt;
 
 namespace k4u
 {
-  KinectMediaSteam::KinectMediaSteam(
+  KinectMediaStream::KinectMediaStream(
     const winrt::com_ptr<IMFMediaSource>& parent,
     const winrt::com_ptr<IMFStreamDescriptor>& streamDescriptor) :
     _parent(parent),
@@ -31,7 +31,7 @@ namespace k4u
     _sampleDuration /= framerateNumerator;
   }
 
-  void KinectMediaSteam::Update(const k4a_image_t& image)
+  void KinectMediaStream::Update(const k4a_image_t& image)
   {
     {
       lock_guard<mutex> lock(_mutex);
@@ -88,19 +88,19 @@ namespace k4u
     }
   }
 
-  HRESULT __stdcall KinectMediaSteam::BeginGetEvent(IMFAsyncCallback* callback, IUnknown* state) noexcept
+  HRESULT __stdcall KinectMediaStream::BeginGetEvent(IMFAsyncCallback* callback, IUnknown* state) noexcept
   {
     lock_guard<mutex> lock(_mutex);
     return _eventQueue->BeginGetEvent(callback, state);
   }
 
-  HRESULT __stdcall KinectMediaSteam::EndGetEvent(IMFAsyncResult* result, IMFMediaEvent** event) noexcept
+  HRESULT __stdcall KinectMediaStream::EndGetEvent(IMFAsyncResult* result, IMFMediaEvent** event) noexcept
   {
     lock_guard<mutex> lock(_mutex);
     return _eventQueue->EndGetEvent(result, event);
   }
 
-  HRESULT __stdcall KinectMediaSteam::GetEvent(DWORD flags, IMFMediaEvent** event) noexcept
+  HRESULT __stdcall KinectMediaStream::GetEvent(DWORD flags, IMFMediaEvent** event) noexcept
   {
     com_ptr<IMFMediaEventQueue> eventQueue;
     {
@@ -111,27 +111,27 @@ namespace k4u
     return eventQueue->GetEvent(flags, event);
   }
 
-  HRESULT __stdcall KinectMediaSteam::QueueEvent(MediaEventType type, const GUID& extendedType, HRESULT status, const PROPVARIANT* value) noexcept
+  HRESULT __stdcall KinectMediaStream::QueueEvent(MediaEventType type, const GUID& extendedType, HRESULT status, const PROPVARIANT* value) noexcept
   {
     lock_guard<mutex> lock(_mutex);
     return _eventQueue->QueueEventParamVar(type, extendedType, status, value);
   }
 
-  HRESULT __stdcall KinectMediaSteam::GetMediaSource(IMFMediaSource** mediaSource) noexcept
+  HRESULT __stdcall KinectMediaStream::GetMediaSource(IMFMediaSource** mediaSource) noexcept
   {
     lock_guard<mutex> lock(_mutex);
     _parent.copy_to(mediaSource);
     return S_OK;
   }
 
-  HRESULT __stdcall KinectMediaSteam::GetStreamDescriptor(IMFStreamDescriptor** streamDescriptor) noexcept
+  HRESULT __stdcall KinectMediaStream::GetStreamDescriptor(IMFStreamDescriptor** streamDescriptor) noexcept
   {
     lock_guard<mutex> lock(_mutex);
     _streamDescriptor.copy_to(streamDescriptor);
     return S_OK;
   }
 
-  HRESULT __stdcall KinectMediaSteam::RequestSample(IUnknown* token) noexcept
+  HRESULT __stdcall KinectMediaStream::RequestSample(IUnknown* token) noexcept
   {
     lock_guard<mutex> lock(_mutex);
 
