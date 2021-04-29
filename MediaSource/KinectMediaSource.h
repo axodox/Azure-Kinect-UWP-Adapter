@@ -2,10 +2,12 @@
 #include "stdafx.h"
 #include "KinectStreamDescription.h"
 #include "KinectMediaStream.h"
+#include "KsControl.h"
+#include "ClassFactory.h"
 
 namespace k4u
 {
-  class __declspec(uuid("{82bd2aa2-a114-45f8-80dd-92fab9dbcc42}")) KinectMediaSource : public winrt::implements<
+  class __declspec(uuid("{9812588D-5CE9-4E4C-ABC1-049138D10DCE}")) KinectMediaSource : public winrt::implements<
     KinectMediaSource,
     IMFMediaEventGenerator,
     IMFMediaSource,
@@ -46,7 +48,7 @@ namespace k4u
     virtual HRESULT __stdcall KsEvent(PKSPROPERTY property, ULONG propertyLength, LPVOID propertyData, ULONG dataLength, ULONG* bytesReturned) noexcept override;
 
   private:
-    std::mutex _mutex;
+    std::recursive_mutex _mutex;
     winrt::com_ptr<IMFMediaEventQueue> _eventQueue;
     winrt::com_ptr<IMFPresentationDescriptor> _presentationDescriptor;
     winrt::com_ptr<IMFAttributes> _attributes;
@@ -59,4 +61,6 @@ namespace k4u
     void InitializeAttributes();
     void RunCapture();
   };
+
+  struct KinectMediaSourceClassFactory : public ClassFactory<KinectMediaSourceClassFactory, KinectMediaSource> { };
 }

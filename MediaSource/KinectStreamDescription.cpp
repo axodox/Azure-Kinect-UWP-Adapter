@@ -246,7 +246,7 @@ namespace k4u
     {
       for (auto framerate : framerates)
       {
-        if (width > 512 && framerate > 15) continue;
+        if (height > 512 && framerate > 15) continue;
         AddMediaType(MFVideoFormat_D16, width, height, framerate);
       }
     }

@@ -57,6 +57,18 @@
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
     </FilesToPackage>
+    <FilesToPackage Include="$(OutDir)\k4a.dll">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+    <FilesToPackage Include="$(OutDir)\k4arecord.dll">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
+    <FilesToPackage Include="$(OutDir)\depthengine_2_0.dll">
+      <PackageRelativeDirectory>
+      </PackageRelativeDirectory>
+    </FilesToPackage>
     <FilesToPackage Include="$(OutDir)\SimpleMediaSourceDriver.dll">
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
@@ -169,21 +181,25 @@
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
@@ -192,6 +208,7 @@
     </Inf2CatWindowsVersionList>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
@@ -200,18 +217,21 @@
     </Inf2CatWindowsVersionList>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
     <Inf2CatWindowsVersionList>Server10_$(DDKPlatform)</Inf2CatWindowsVersionList>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DebuggerFlavor>DbgengRemoteDebugger</DebuggerFlavor>
     <Inf2CatWindowsVersionList>Server10_$(DDKPlatform)</Inf2CatWindowsVersionList>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(ConfigurationName)\</OutDir>
     <IntDir>$(ProjectDir)obj\$(Platform)\$(ConfigurationName)\</IntDir>
+    <Inf2CatUseLocalTime>true</Inf2CatUseLocalTime>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>

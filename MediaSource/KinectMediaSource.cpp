@@ -21,7 +21,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::BeginGetEvent(IMFAsyncCallback* callback, IUnknown* state) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
 
     return _eventQueue->BeginGetEvent(callback, state);
@@ -29,7 +29,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::EndGetEvent(IMFAsyncResult* result, IMFMediaEvent** event) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
 
     return _eventQueue->EndGetEvent(result, event);
@@ -39,7 +39,7 @@ namespace k4u
   {
     com_ptr<IMFMediaEventQueue> eventQueue;
     {
-      lock_guard<mutex> lock(_mutex);
+      lock_guard<recursive_mutex> lock(_mutex);
       if (_isShutdown) return MF_E_SHUTDOWN;
 
       eventQueue = _eventQueue;
@@ -50,7 +50,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::QueueEvent(MediaEventType type, const GUID& extendedType, HRESULT status, const PROPVARIANT* value) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
 
     return _eventQueue->QueueEventParamVar(type, extendedType, status, value);
@@ -58,7 +58,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::CreatePresentationDescriptor(IMFPresentationDescriptor** presentationDescriptor) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (!presentationDescriptor) return E_POINTER;
 
@@ -67,7 +67,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::GetCharacteristics(DWORD* characteristics) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (!characteristics) return E_POINTER;
 
@@ -82,7 +82,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::Shutdown() noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     _isShutdown = true;
 
     Stop();
@@ -97,7 +97,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::Start(IMFPresentationDescriptor* presentationDescriptor, const GUID* timeFormat, const PROPVARIANT* startPosition) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (_isRunning) return MF_E_INVALID_STATE_TRANSITION;
     if (!presentationDescriptor || !startPosition) return E_INVALIDARG;
@@ -162,7 +162,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::Stop() noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (!_isRunning) return MF_E_INVALID_STATE_TRANSITION;
 
@@ -209,7 +209,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::GetSourceAttributes(IMFAttributes** attributes) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (!attributes) return E_POINTER;
 
@@ -219,7 +219,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::GetStreamAttributes(DWORD streamIdentifier, IMFAttributes** attributes) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
     if (!attributes) return E_POINTER;
 
@@ -249,7 +249,7 @@ namespace k4u
 
   HRESULT __stdcall KinectMediaSource::GetService(const GUID& guidService, const IID& riid, LPVOID* ppvObject) noexcept
   {
-    lock_guard<mutex> lock(_mutex);
+    lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
 
     return MF_E_UNSUPPORTED_SERVICE;
@@ -277,15 +277,15 @@ namespace k4u
 
     com_ptr<IMFSensorProfile> profile;
     check_hresult(MFCreateSensorProfile(KSCAMERAPROFILE_Legacy, 0, nullptr, profile.put()));
-    profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))");
-    profile->AddProfileFilter(1, L"((RES==;FRT<=30,1;SUT==))");
-    profileCollection->AddProfile(profile.get());
+    check_hresult(profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))"));
+    check_hresult(profile->AddProfileFilter(1, L"((RES==;FRT<=30,1;SUT==))"));
+    check_hresult(profileCollection->AddProfile(profile.get()));
 
     profile = nullptr;
     check_hresult(MFCreateSensorProfile(KSCAMERAPROFILE_VideoRecording, 1, nullptr, profile.put()));
-    profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))");
-    profile->AddProfileFilter(1, L"((RES==;FRT<=30,1;SUT==))");
-    profileCollection->AddProfile(profile.get());
+    check_hresult(profile->AddProfileFilter(0, L"((RES==;FRT<=30,1;SUT==))"));
+    check_hresult(profile->AddProfileFilter(1, L"((RES==;FRT<=30,1;SUT==))"));
+    check_hresult(profileCollection->AddProfile(profile.get()));
 
     check_hresult(MFCreateAttributes(_attributes.put(), 1));
     check_hresult(_attributes->SetUnknown(MF_DEVICEMFT_SENSORPROFILE_COLLECTION, profileCollection.get()));

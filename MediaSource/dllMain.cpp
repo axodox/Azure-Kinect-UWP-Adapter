@@ -1,35 +1,70 @@
-/// <copyright file="dllmain.cpp" company="Microsoft">
-///    Copyright (c) Microsoft Corporation. All rights reserved.
-/// </copyright>
-// dllmain.cpp : Defines the entry point for the DLL application.
 #include "stdafx.h"
+#include "KinectMediaSource.h"
 
-#include <wrl\module.h>
+using namespace k4u;
+using namespace std;
+using namespace winrt;
 
-#if !defined(__WRL_CLASSIC_COM__)
+//HRESULT __stdcall DllGetActivationFactory(void* activatibleClassId, void** factory)
 STDAPI DllGetActivationFactory(_In_ HSTRING activatibleClassId, _COM_Outptr_ IActivationFactory** factory)
 {
-    return Module<InProc>::GetModule().GetActivationFactory(activatibleClassId, factory);
-}
-#endif
+  /*if (!factory) return E_POINTER;
 
-#if !defined(__WRL_WINRT_STRICT__)
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, _COM_Outptr_ void** ppv)
+  wstring_view const name{ *reinterpret_cast<hstring*>(&activatibleClassId) };
+  if (name == L"KinectMediaSource" || name == L"CustomCameraSource")
+  {
+    *factory = make<KinectMediaSourceClassFactory>().as<IActivationFactory>().detach();
+    return S_OK;
+  }*/
+
+  return CLASS_E_CLASSNOTAVAILABLE;
+}
+
+//HRESULT __stdcall DllGetClassObject(GUID const& classId, GUID const& interfaceId, void** result)
+STDAPI DllGetClassObject(REFCLSID classId, REFIID interfaceId, _COM_Outptr_ void** result)
 {
-    return Module<InProc>::GetModule().GetClassObject(rclsid, riid, ppv);
-}
-#endif
+  try
+  {
+    *result = nullptr;
 
+    if (classId == __uuidof(KinectMediaSource))
+    {
+      return winrt::make<KinectMediaSourceClassFactory>()->QueryInterface(interfaceId, result);
+    }
+
+    return CLASS_E_CLASSNOTAVAILABLE;
+  }
+  catch (...)
+  {
+    return to_hresult();
+  }
+}
+
+//HRESULT __stdcall DllCanUnloadNow()
 STDAPI DllCanUnloadNow()
 {
-    return Module<InProc>::GetModule().Terminate() ? S_OK : S_FALSE;
+  if (get_module_lock())
+  {
+    return S_FALSE;
+  }
+
+  clear_factory_cache();
+  return S_OK;
 }
 
-STDAPI_(BOOL) DllMain(_In_opt_ HINSTANCE hinst, DWORD reason, _In_opt_ void*)
+//BOOL __stdcall DllMain(HINSTANCE instance, DWORD reason, void*)
+STDAPI_(BOOL) DllMain(_In_opt_ HINSTANCE instance, DWORD reason, _In_opt_ void*)
 {
-    if (reason == DLL_PROCESS_ATTACH)
-    {
-        DisableThreadLibraryCalls(hinst);
-    }
-    return TRUE;
+  {
+    ofstream s("C:\\kinect.log");
+    s << GetCurrentProcessId();
+  }
+
+  /*while (!IsDebuggerPresent()) Sleep(1000);
+  DebugBreak();*/
+  if (reason == DLL_PROCESS_ATTACH)
+  {
+    DisableThreadLibraryCalls(instance);
+  }
+  return TRUE;
 }

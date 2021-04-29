@@ -1,14 +1,15 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="module.def" />
+    <None Include="module.def">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="packages.config">
+      <Filter>Config</Filter>
+    </None>
+    <None Include="..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\lib\native\amd64\release\k4a.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllMain.cpp" />
-    <ClCompile Include="SimpleMediaSource.cpp" />
-    <ClCompile Include="SimpleMediaStream.cpp" />
-    <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="KinectStreamDescription.cpp">
       <Filter>Kinect</Filter>
     </ClCompile>
@@ -21,11 +22,12 @@
     <ClCompile Include="MediaFoundationHelpers.cpp">
       <Filter>Kinect</Filter>
     </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Config</Filter>
+    </ClCompile>
+    <ClCompile Include="dllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SimpleMediaSource.h" />
-    <ClInclude Include="SimpleMediaStream.h" />
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="KinectStreamDescription.h">
       <Filter>Kinect</Filter>
     </ClInclude>
@@ -41,6 +43,15 @@
     <ClInclude Include="Hasher.h">
       <Filter>Framework</Filter>
     </ClInclude>
+    <ClInclude Include="KsControl.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Config</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassFactory.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Kinect">
@@ -48,6 +59,9 @@
     </Filter>
     <Filter Include="Framework">
       <UniqueIdentifier>{04b56ce0-f9c4-40e8-a798-af5bae07d8de}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Config">
+      <UniqueIdentifier>{e329b110-7bce-4f4c-ab58-9561f104525e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
