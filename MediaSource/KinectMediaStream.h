@@ -10,6 +10,7 @@ namespace k4u
   {
   public:
     KinectMediaStream(const winrt::com_ptr<IMFMediaSource>& parent, const winrt::com_ptr<IMFStreamDescriptor>& streamDescriptor);
+    ~KinectMediaStream();
 
     void Update(const k4a_image_t& image);
 

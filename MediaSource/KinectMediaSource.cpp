@@ -87,7 +87,11 @@ namespace k4u
 
     Stop();
 
-    _eventQueue = nullptr;
+    if (_eventQueue)
+    {
+      _eventQueue->Shutdown();
+      _eventQueue = nullptr;
+    }
     _presentationDescriptor = nullptr;
     _attributes = nullptr;
     _streams.clear();

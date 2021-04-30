@@ -31,6 +31,11 @@ namespace k4u
     _sampleDuration /= framerateNumerator;
   }
 
+  KinectMediaStream::~KinectMediaStream()
+  {
+    _eventQueue->Shutdown();
+  }
+
   void KinectMediaStream::Update(const k4a_image_t& image)
   {
     {

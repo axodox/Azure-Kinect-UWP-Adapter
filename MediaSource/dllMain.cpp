@@ -55,6 +55,8 @@ STDAPI DllCanUnloadNow()
 //BOOL __stdcall DllMain(HINSTANCE instance, DWORD reason, void*)
 STDAPI_(BOOL) DllMain(_In_opt_ HINSTANCE instance, DWORD reason, _In_opt_ void*)
 {
+  if (reason != DLL_PROCESS_ATTACH) return TRUE;
+
   {
     ofstream s("C:\\kinect.log");
     s << GetCurrentProcessId();
@@ -62,9 +64,7 @@ STDAPI_(BOOL) DllMain(_In_opt_ HINSTANCE instance, DWORD reason, _In_opt_ void*)
 
   /*while (!IsDebuggerPresent()) Sleep(1000);
   DebugBreak();*/
-  if (reason == DLL_PROCESS_ATTACH)
-  {
-    DisableThreadLibraryCalls(instance);
-  }
+
+  DisableThreadLibraryCalls(instance);
   return TRUE;
 }

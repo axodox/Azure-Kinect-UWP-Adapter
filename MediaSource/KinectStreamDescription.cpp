@@ -242,7 +242,7 @@ namespace k4u
       5
     };
 
-    for (auto [width, height] : resolutions)
+    for (auto& [width, height] : resolutions)
     {
       for (auto framerate : framerates)
       {

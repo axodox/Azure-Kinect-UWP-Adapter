@@ -7,7 +7,6 @@
     <None Include="packages.config">
       <Filter>Config</Filter>
     </None>
-    <None Include="..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\lib\native\amd64\release\k4a.dll" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="KinectStreamDescription.cpp">
@@ -26,6 +25,7 @@
       <Filter>Config</Filter>
     </ClCompile>
     <ClCompile Include="dllMain.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KinectStreamDescription.h">
