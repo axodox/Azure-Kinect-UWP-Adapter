@@ -65,7 +65,7 @@ namespace k4u
     check_hresult(buffer2D->Lock2DSize(MF2DBuffer_LockFlags_Write, &mfScanline0, &mfStride, &mfBufferStart, &mfBufferLength));
 
     //Perform copy
-    auto rowLength = min(k4aStride, mfStride);
+    auto rowLength = min((long)k4aStride, mfStride);
     for (auto row = 0u; row < _height; row++)
     {
       auto k4aData = k4aScanline0 + row * k4aStride;

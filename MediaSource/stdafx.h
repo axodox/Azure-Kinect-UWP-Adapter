@@ -9,6 +9,7 @@
 #include <fstream>
 
 // Windows Header Files:
+#define NOMINMAX
 #include <windows.h>
 #include <propvarutil.h>
 //#include <mfstd.h> // Must be included before <initguid.h>, or else DirectDraw GUIDs will be defined twice. See the comment in <uuids.h>.

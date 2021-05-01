@@ -103,17 +103,17 @@ namespace k4u
   {
     lock_guard<recursive_mutex> lock(_mutex);
     if (_isShutdown) return MF_E_SHUTDOWN;
-    if (_isRunning) return MF_E_INVALID_STATE_TRANSITION;
-    if (!presentationDescriptor || !startPosition) return E_INVALIDARG;
-    if (timeFormat != nullptr && *timeFormat != GUID_NULL) return MF_E_UNSUPPORTED_TIME_FORMAT;
-
-    auto count = k4a_device_get_installed_count();
-    if (count == 0) return MF_E_NOT_AVAILABLE;
-
-    if (k4a_device_open(K4A_DEVICE_DEFAULT, &_device) != K4A_RESULT_SUCCEEDED) return MF_E_VIDEO_DEVICE_LOCKED;
+    if (!presentationDescriptor) return E_INVALIDARG;
 
     try
     {
+      if (_isRunning) check_hresult(Stop());
+
+      auto count = k4a_device_get_installed_count();
+      if (count == 0) return MF_E_NOT_AVAILABLE;
+
+      if (k4a_device_open(K4A_DEVICE_DEFAULT, &_device) != K4A_RESULT_SUCCEEDED) return MF_E_VIDEO_DEVICE_LOCKED;
+   
       auto cameraConfiguration = KinectStreamDescription::CreateCameraConfiguration(presentationDescriptor);
       if (k4a_device_start_cameras(_device, &cameraConfiguration) != K4A_RESULT_SUCCEEDED) return E_INVALIDARG;
 
@@ -304,7 +304,7 @@ namespace k4u
 
       for (auto& [type, stream] : _streams)
       {
-        k4a_image_t image;
+        k4a_image_t image{};
         switch (type)
         {
         case KinectStreamType::Color:
@@ -315,7 +315,11 @@ namespace k4u
           break;
         }
 
-        stream->Update(image);
+        if (image)
+        {
+          stream->Update(image);
+          k4a_image_release(image);
+        }
       }
 
       k4a_capture_release(capture);

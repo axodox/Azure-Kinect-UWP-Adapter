@@ -25,7 +25,6 @@
       <Filter>Config</Filter>
     </ClCompile>
     <ClCompile Include="dllMain.cpp" />
-    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KinectStreamDescription.h">

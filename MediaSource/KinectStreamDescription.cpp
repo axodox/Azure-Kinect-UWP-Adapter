@@ -31,7 +31,7 @@ namespace k4u
     };
 
     com_ptr<IMFPresentationDescriptor> result;
-    check_hresult(MFCreatePresentationDescriptor(streams.size(), streams.data(), result.put()));
+    check_hresult(MFCreatePresentationDescriptor((DWORD)streams.size(), streams.data(), result.put()));
 
     return result;
   }
@@ -43,7 +43,7 @@ namespace k4u
     unsigned long streamCount;
     check_hresult(presentationDescriptor->GetStreamDescriptorCount(&streamCount));
 
-    uint32_t maxFps = 0;
+    uint32_t minFps = numeric_limits<uint32_t>::max();
     for (unsigned long streamId = 0; streamId < streamCount; streamId++)
     {
       com_ptr<IMFStreamDescriptor> streamDescriptor;
@@ -140,13 +140,13 @@ namespace k4u
       }
 
       auto fps = fpsNumerator / fpsDenominator;
-      if (isSelected && fps > maxFps)
+      if (isSelected && fps < minFps)
       {
-        maxFps = fps;
+        minFps = fps;
       }
     }
 
-    switch (maxFps)
+    switch (minFps)
     {
     case 30:
       configuration.camera_fps = k4a_fps_t::K4A_FRAMES_PER_SECOND_30;
@@ -215,6 +215,8 @@ namespace k4u
       {
         for (auto framerate : framerates)
         {
+          if (framerate > 15 && height > 2160) continue;
+
           AddMediaType(format, width, height, framerate);
         }
 
