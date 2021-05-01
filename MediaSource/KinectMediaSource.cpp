@@ -83,9 +83,8 @@ namespace k4u
   HRESULT __stdcall KinectMediaSource::Shutdown() noexcept
   {
     lock_guard<recursive_mutex> lock(_mutex);
-    _isShutdown = true;
-
     Stop();
+    _isShutdown = true;
 
     if (_eventQueue)
     {
@@ -196,6 +195,11 @@ namespace k4u
     }
     catch (...)
     {
+      if (_device)
+      {
+        k4a_device_close(_device);
+        _device = {};
+      }
       return to_hresult();
     }
   }
@@ -214,6 +218,7 @@ namespace k4u
         _workerThread.join();
       }
       k4a_device_close(_device);
+      _device = {};
 
       PROPVARIANT stopTime;
       check_hresult(InitPropVariantFromInt64(MFGetSystemTime(), &stopTime));
