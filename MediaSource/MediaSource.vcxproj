@@ -114,17 +114,16 @@
     <ClCompile Include="KinectMediaSource.cpp" />
     <ClCompile Include="KinectMediaStream.cpp" />
     <ClCompile Include="KinectStreamDescription.cpp" />
-    <ClCompile Include="MediaFoundationHelpers.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ClassFactory.h" />
+    <ClInclude Include="Guid.h" />
     <ClInclude Include="Hasher.h" />
     <ClInclude Include="KinectMediaSource.h" />
     <ClInclude Include="KinectMediaStream.h" />
     <ClInclude Include="KinectStreamDescription.h" />
     <ClInclude Include="KsControl.h" />
-    <ClInclude Include="MediaFoundationHelpers.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

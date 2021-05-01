@@ -1,9 +1,11 @@
 #include "stdafx.h"
 #include "KinectMediaStream.h"
+#include "Guid.h"
 
 using namespace std;
 using namespace std::chrono;
 using namespace winrt;
+using namespace DirectX;
 
 namespace k4u
 {
@@ -18,6 +20,7 @@ namespace k4u
 
     InitializeStreamProperties();
     InitializeIntrinsics(calibration);
+    InitializeExtrinsics(calibration);
   }
 
   KinectMediaStream::~KinectMediaStream()
@@ -71,7 +74,9 @@ namespace k4u
     check_hresult(sample->AddBuffer(buffer.get()));
     check_hresult(sample->SetSampleTime(MFGetSystemTime()));
     check_hresult(sample->SetSampleDuration(_sampleDuration.count()));
+
     check_hresult(sample->SetBlob(MFSampleExtension_PinholeCameraIntrinsics, reinterpret_cast<const uint8_t*>(&_cameraIntrinsics), sizeof(_cameraIntrinsics)));
+    check_hresult(sample->SetBlob(MFSampleExtension_CameraExtrinsics, reinterpret_cast<const uint8_t*>(&_cameraExtrinsics), sizeof(_cameraExtrinsics)));
     
     {
       lock_guard<mutex> lock(_mutex);
@@ -172,5 +177,28 @@ namespace k4u
     
     _cameraIntrinsics.IntrinsicModelCount = 1;
     _cameraIntrinsics.IntrinsicModels[0] = intrinsics;
+  }
+  
+  void KinectMediaStream::InitializeExtrinsics(const k4a_calibration_camera_t& calibration)
+  {
+    MFCameraExtrinsic_CalibratedTransform extrinsics{};
+    
+    //Set calibration GUID
+    extrinsics.CalibrationId = make_guid("45af5bc9-275f-491a-bcb5-7db572eee57e");
+
+    //Get rotation quaternion from matrix
+    XMFLOAT3X3 rotationMatrix{ calibration.extrinsics.rotation };
+
+    XMVECTOR scaling, rotation, translation;
+    XMMatrixDecompose(&scaling, &rotation, &translation, XMLoadFloat3x3(&rotationMatrix));
+        
+    XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(&extrinsics.Orientation), rotation);
+
+    //Get translation
+    extrinsics.Position = reinterpret_cast<const MF_FLOAT3&>(calibration.extrinsics.translation);
+
+    //Store extrinsics
+    _cameraExtrinsics.TransformCount = 1;
+    _cameraExtrinsics.CalibratedTransforms[0] = extrinsics;
   }
 }

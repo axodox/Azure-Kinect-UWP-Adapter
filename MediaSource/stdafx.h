@@ -28,6 +28,7 @@
 #include <activation.h>
 #include <hstring.h>
 #include <winrt/base.h>
+#include <DirectXMath.h>
 
 //Kinect header files
 #include <k4a/k4a.h>

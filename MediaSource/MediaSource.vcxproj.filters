@@ -18,9 +18,6 @@
     <ClCompile Include="KinectMediaSource.cpp">
       <Filter>Kinect</Filter>
     </ClCompile>
-    <ClCompile Include="MediaFoundationHelpers.cpp">
-      <Filter>Kinect</Filter>
-    </ClCompile>
     <ClCompile Include="stdafx.cpp">
       <Filter>Config</Filter>
     </ClCompile>
@@ -36,9 +33,6 @@
     <ClInclude Include="KinectMediaSource.h">
       <Filter>Kinect</Filter>
     </ClInclude>
-    <ClInclude Include="MediaFoundationHelpers.h">
-      <Filter>Kinect</Filter>
-    </ClInclude>
     <ClInclude Include="Hasher.h">
       <Filter>Framework</Filter>
     </ClInclude>
@@ -49,6 +43,9 @@
       <Filter>Config</Filter>
     </ClInclude>
     <ClInclude Include="ClassFactory.h">
+      <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Guid.h">
       <Filter>Framework</Filter>
     </ClInclude>
   </ItemGroup>

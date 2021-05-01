@@ -37,8 +37,10 @@ namespace k4u
     std::chrono::duration<uint32_t, std::nano> _sampleDuration;
     std::queue<winrt::com_ptr<IUnknown>> _sampleRequestTokens;
     MFPinholeCameraIntrinsics _cameraIntrinsics;
+    MFCameraExtrinsics _cameraExtrinsics;
 
     void InitializeStreamProperties();
     void InitializeIntrinsics(const k4a_calibration_camera_t& calibration);
+    void InitializeExtrinsics(const k4a_calibration_camera_t& calibration);
   };
 }
