@@ -107,20 +107,30 @@ namespace k4u
 
     try
     {
+      //Stop if already running
       if (_isRunning) check_hresult(Stop());
 
+      //Check if a Kinect is connected
       auto count = k4a_device_get_installed_count();
       if (count == 0) return MF_E_NOT_AVAILABLE;
 
+      //Try to open Kinect
       if (k4a_device_open(K4A_DEVICE_DEFAULT, &_device) != K4A_RESULT_SUCCEEDED) return MF_E_VIDEO_DEVICE_LOCKED;
-   
+      
+      //Determine camera calibration from presentation
       auto cameraConfiguration = KinectStreamDescription::CreateCameraConfiguration(presentationDescriptor);
       if (k4a_device_start_cameras(_device, &cameraConfiguration) != K4A_RESULT_SUCCEEDED) return E_INVALIDARG;
 
+      //Get calibration
+      k4a_calibration_t calibration;
+      k4a_device_get_calibration(_device, cameraConfiguration.depth_mode, cameraConfiguration.color_resolution, &calibration);
+
+      //Set start time
       PROPVARIANT startTime;
       check_hresult(InitPropVariantFromInt64(MFGetSystemTime(), &startTime));
       check_hresult(_eventQueue->QueueEventParamVar(MESourceStarted, GUID_NULL, S_OK, &startTime));
 
+      //Start all selected streams
       unsigned long streamCount;
       check_hresult(_presentationDescriptor->GetStreamDescriptorCount(&streamCount));
 
@@ -129,6 +139,7 @@ namespace k4u
 
       for (unsigned long descriptorIndex = 0; descriptorIndex < descriptorCount; descriptorIndex++)
       {
+        //Get stream from ID
         com_ptr<IMFStreamDescriptor> streamDescriptor;
         int isSelected;
         check_hresult(presentationDescriptor->GetStreamDescriptorByIndex(descriptorIndex, &isSelected, streamDescriptor.put()));
@@ -137,24 +148,49 @@ namespace k4u
         check_hresult(streamDescriptor->GetStreamIdentifier(&streamIndex));
         if (streamIndex >= streamCount) return MF_E_INVALIDSTREAMNUMBER;
         
+        //Check if source is selected
         if (isSelected)
         {
+          //Select source internally too
           check_hresult(_presentationDescriptor->SelectStream(streamIndex));
 
-          auto stream = make_self<KinectMediaStream>(get_strong().as<IMFMediaSource>(), streamDescriptor);
+          //Get appropriate calibration
+          uint32_t sourceType;
+          check_hresult(streamDescriptor->GetUINT32(MF_DEVICESTREAM_ATTRIBUTE_FRAMESOURCE_TYPES, &sourceType));
+          k4a_calibration_camera_t* cameraCalibration = nullptr;
+          switch (sourceType)
+          {
+          case MFFrameSourceTypes_Color:
+            cameraCalibration = &calibration.color_camera_calibration;
+            break;
+          case MFFrameSourceTypes_Depth:
+            cameraCalibration = &calibration.depth_camera_calibration;
+            break;
+          default:
+            throw hresult_not_implemented(L"Unknown frame source type!");
+          }
+
+          //Create stream
+          auto stream = make_self<KinectMediaStream>(get_strong().as<IMFMediaSource>(), streamDescriptor, *cameraCalibration);
+
+          //Raise media events
           check_hresult(_eventQueue->QueueEventParamUnk(MENewStream, GUID_NULL, S_OK, stream.as<IUnknown>().get()));
           check_hresult(stream->QueueEvent(MEStreamStarted, GUID_NULL, S_OK, &startTime));
           
+          //Store in active stream list
           _streams.emplace((KinectStreamType)descriptorIndex, move(stream));
         }
         else
         {
+          //Deselect stream
           check_hresult(_presentationDescriptor->DeselectStream(streamIndex));
         }
       }
 
+      //Start capture thread
       _workerThread = thread([&] { RunCapture(); });
 
+      //Return on success
       _isRunning = true;
       return S_OK;
     }

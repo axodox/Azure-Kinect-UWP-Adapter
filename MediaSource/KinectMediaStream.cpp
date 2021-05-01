@@ -9,26 +9,15 @@ namespace k4u
 {
   KinectMediaStream::KinectMediaStream(
     const winrt::com_ptr<IMFMediaSource>& parent,
-    const winrt::com_ptr<IMFStreamDescriptor>& streamDescriptor) :
+    const winrt::com_ptr<IMFStreamDescriptor>& streamDescriptor,
+    const k4a_calibration_camera_t& calibration) :
     _parent(parent),
     _streamDescriptor(streamDescriptor)
   {
     check_hresult(MFCreateEventQueue(_eventQueue.put()));
 
-    com_ptr<IMFMediaTypeHandler> mediaTypeHandler;
-    check_hresult(_streamDescriptor->GetMediaTypeHandler(mediaTypeHandler.put()));
-
-    com_ptr<IMFMediaType> mediaType;
-    check_hresult(mediaTypeHandler->GetCurrentMediaType(mediaType.put()));
-
-    check_hresult(MFGetAttributeSize(mediaType.get(), MF_MT_FRAME_SIZE, &_width, &_height));
-    check_hresult(mediaType->GetGUID(MF_MT_SUBTYPE, reinterpret_cast<GUID*>(&_format)));
-
-    uint32_t framerateNumerator, framerateDenominator;
-    check_hresult(MFGetAttributeRatio(mediaType.get(), MF_MT_FRAME_RATE, &framerateNumerator, &framerateDenominator));
-
-    _sampleDuration = duration<uint32_t>(framerateDenominator);
-    _sampleDuration /= framerateNumerator;
+    InitializeStreamProperties();
+    InitializeIntrinsics(calibration);
   }
 
   KinectMediaStream::~KinectMediaStream()
@@ -82,7 +71,8 @@ namespace k4u
     check_hresult(sample->AddBuffer(buffer.get()));
     check_hresult(sample->SetSampleTime(MFGetSystemTime()));
     check_hresult(sample->SetSampleDuration(_sampleDuration.count()));
-
+    check_hresult(sample->SetBlob(MFSampleExtension_PinholeCameraIntrinsics, reinterpret_cast<const uint8_t*>(&_cameraIntrinsics), sizeof(_cameraIntrinsics)));
+    
     {
       lock_guard<mutex> lock(_mutex);
       auto token = move(_sampleRequestTokens.front());
@@ -145,5 +135,42 @@ namespace k4u
     if (_sampleRequestTokens.size() > 10) _sampleRequestTokens.pop();
 
     return S_OK;
+  }
+
+  void KinectMediaStream::InitializeStreamProperties()
+  {
+    com_ptr<IMFMediaTypeHandler> mediaTypeHandler;
+    check_hresult(_streamDescriptor->GetMediaTypeHandler(mediaTypeHandler.put()));
+
+    com_ptr<IMFMediaType> mediaType;
+    check_hresult(mediaTypeHandler->GetCurrentMediaType(mediaType.put()));
+
+    check_hresult(MFGetAttributeSize(mediaType.get(), MF_MT_FRAME_SIZE, &_width, &_height));
+    check_hresult(mediaType->GetGUID(MF_MT_SUBTYPE, reinterpret_cast<GUID*>(&_format)));
+
+    uint32_t framerateNumerator, framerateDenominator;
+    check_hresult(MFGetAttributeRatio(mediaType.get(), MF_MT_FRAME_RATE, &framerateNumerator, &framerateDenominator));
+
+    _sampleDuration = duration<uint32_t>(framerateDenominator);
+    _sampleDuration /= framerateNumerator;
+  }
+
+  void KinectMediaStream::InitializeIntrinsics(const k4a_calibration_camera_t& calibration)
+  {
+    MFPinholeCameraIntrinsic_IntrinsicModel intrinsics{};
+    intrinsics.Width = calibration.resolution_width;
+    intrinsics.Height = calibration.resolution_height;
+
+    auto& params = calibration.intrinsics.parameters.param;
+    intrinsics.CameraModel.FocalLength = { params.fx, params.fy };
+    intrinsics.CameraModel.PrincipalPoint = { params.cx, params.cy };
+    intrinsics.DistortionModel.Radial_k1 = params.k1;
+    intrinsics.DistortionModel.Radial_k2 = params.k2;
+    intrinsics.DistortionModel.Radial_k3 = params.k3;
+    intrinsics.DistortionModel.Tangential_p1 = params.p1;
+    intrinsics.DistortionModel.Tangential_p2 = params.p2;
+    
+    _cameraIntrinsics.IntrinsicModelCount = 1;
+    _cameraIntrinsics.IntrinsicModels[0] = intrinsics;
   }
 }

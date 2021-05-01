@@ -189,7 +189,7 @@ namespace k4u
   {
     vector<guid> formats = {
       MFVideoFormat_RGB32,
-      MFVideoFormat_MJPG,
+      //MFVideoFormat_MJPG, TBD
       MFVideoFormat_NV12,
       MFVideoFormat_YUY2
     };
