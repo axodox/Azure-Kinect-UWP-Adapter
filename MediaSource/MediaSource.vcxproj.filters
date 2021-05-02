@@ -22,6 +22,9 @@
       <Filter>Config</Filter>
     </ClCompile>
     <ClCompile Include="dllMain.cpp" />
+    <ClCompile Include="KinectDistortionModel.cpp">
+      <Filter>Kinect</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KinectStreamDescription.h">
@@ -47,6 +50,9 @@
     </ClInclude>
     <ClInclude Include="Guid.h">
       <Filter>Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="KinectDistortionModel.h">
+      <Filter>Kinect</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

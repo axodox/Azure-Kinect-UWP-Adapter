@@ -53,23 +53,23 @@
     <Inf Include="SimpleMediaSourceDriver.inf" />
   </ItemGroup>
   <ItemGroup>
-    <FilesToPackage Include="$(OutDir)\SimpleMediaSource.dll">
+    <FilesToPackage Include="$(OutDir)SimpleMediaSource.dll">
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
     </FilesToPackage>
-    <FilesToPackage Include="$(OutDir)\k4a.dll">
+    <FilesToPackage Include="$(OutDir)k4a.dll">
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
     </FilesToPackage>
-    <FilesToPackage Include="$(OutDir)\k4arecord.dll">
+    <FilesToPackage Include="$(OutDir)k4arecord.dll">
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
     </FilesToPackage>
-    <FilesToPackage Include="$(OutDir)\depthengine_2_0.dll">
+    <FilesToPackage Include="$(OutDir)depthengine_2_0.dll">
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
     </FilesToPackage>
-    <FilesToPackage Include="$(OutDir)\SimpleMediaSourceDriver.dll">
+    <FilesToPackage Include="$(OutDir)SimpleMediaSourceDriver.dll">
       <PackageRelativeDirectory>
       </PackageRelativeDirectory>
     </FilesToPackage>

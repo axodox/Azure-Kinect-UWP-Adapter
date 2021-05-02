@@ -100,17 +100,18 @@
   <ItemGroup>
     <Content Condition="$(Platform)=='x86'" Include="..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\lib\native\x86\release\*.dll">
       <Link>%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Condition="$(Platform)=='x64'" Include="..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\lib\native\amd64\release\*.dll">
       <Link>%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="module.def" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllMain.cpp" />
+    <ClCompile Include="KinectDistortionModel.cpp" />
     <ClCompile Include="KinectMediaSource.cpp" />
     <ClCompile Include="KinectMediaStream.cpp" />
     <ClCompile Include="KinectStreamDescription.cpp" />
@@ -120,6 +121,7 @@
     <ClInclude Include="ClassFactory.h" />
     <ClInclude Include="Guid.h" />
     <ClInclude Include="Hasher.h" />
+    <ClInclude Include="KinectDistortionModel.h" />
     <ClInclude Include="KinectMediaSource.h" />
     <ClInclude Include="KinectMediaStream.h" />
     <ClInclude Include="KinectStreamDescription.h" />
@@ -129,11 +131,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\build\native\Microsoft.Azure.Kinect.Sensor.targets" Condition="Exists('..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\build\native\Microsoft.Azure.Kinect.Sensor.targets')" />
+    <Import Project="..\packages\Eigen3.3.3.9\build\native\Eigen3.targets" Condition="Exists('..\packages\Eigen3.3.3.9\build\native\Eigen3.targets')" />
   </ImportGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\build\native\Microsoft.Azure.Kinect.Sensor.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Azure.Kinect.Sensor.1.4.1\build\native\Microsoft.Azure.Kinect.Sensor.targets'))" />
+    <Error Condition="!Exists('..\packages\Eigen3.3.3.9\build\native\Eigen3.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Eigen3.3.3.9\build\native\Eigen3.targets'))" />
   </Target>
 </Project>

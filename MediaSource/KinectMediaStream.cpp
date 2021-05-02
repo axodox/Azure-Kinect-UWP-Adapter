@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "KinectMediaStream.h"
 #include "Guid.h"
+#include "KinectDistortionModel.h"
 
 using namespace std;
 using namespace std::chrono;
@@ -166,12 +167,14 @@ namespace k4u
     intrinsics.Width = calibration.resolution_width;
     intrinsics.Height = calibration.resolution_height;
 
+    auto k = ConvertKinectRadialDistortionToMediaFoundation(calibration);
+
     auto& params = calibration.intrinsics.parameters.param;
     intrinsics.CameraModel.FocalLength = { params.fx, params.fy };
     intrinsics.CameraModel.PrincipalPoint = { params.cx, params.cy };
-    intrinsics.DistortionModel.Radial_k1 = params.k1;
-    intrinsics.DistortionModel.Radial_k2 = params.k2;
-    intrinsics.DistortionModel.Radial_k3 = params.k3;
+    intrinsics.DistortionModel.Radial_k1 = k.x;
+    intrinsics.DistortionModel.Radial_k2 = k.y;
+    intrinsics.DistortionModel.Radial_k3 = k.z;
     intrinsics.DistortionModel.Tangential_p1 = params.p1;
     intrinsics.DistortionModel.Tangential_p2 = params.p2;
     
@@ -186,16 +189,23 @@ namespace k4u
     //Set calibration GUID
     extrinsics.CalibrationId = make_guid("45af5bc9-275f-491a-bcb5-7db572eee57e");
 
-    //Get rotation quaternion from matrix
-    XMFLOAT3X3 rotationMatrix{ calibration.extrinsics.rotation };
+    auto axisConvert = XMMatrixScaling(-1, 1, 1);
 
+    //Get rotation quaternion from matrix
+    XMFLOAT3X3 kinectRotation{ calibration.extrinsics.rotation };
+    auto mfRotation = axisConvert * XMLoadFloat3x3(&kinectRotation) * axisConvert;
+    
     XMVECTOR scaling, rotation, translation;
-    XMMatrixDecompose(&scaling, &rotation, &translation, XMLoadFloat3x3(&rotationMatrix));
+    XMMatrixDecompose(&scaling, &rotation, &translation, mfRotation);
         
     XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(&extrinsics.Orientation), rotation);
 
     //Get translation
-    extrinsics.Position = reinterpret_cast<const MF_FLOAT3&>(calibration.extrinsics.translation);
+    extrinsics.Position = {
+      calibration.extrinsics.translation[0] / -1000.f,
+      calibration.extrinsics.translation[1] / 1000.f,
+      calibration.extrinsics.translation[2] / 1000.f
+    };
 
     //Store extrinsics
     _cameraExtrinsics.TransformCount = 1;

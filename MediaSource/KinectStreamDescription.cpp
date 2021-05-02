@@ -248,7 +248,7 @@ namespace k4u
     {
       for (auto framerate : framerates)
       {
-        if (height > 512 && framerate > 15) continue;
+        if (height > 576 && framerate > 15) continue;
         AddMediaType(MFVideoFormat_D16, width, height, framerate);
       }
     }
@@ -260,7 +260,7 @@ namespace k4u
     {
     case KinectStreamType::Color:
       AddColorMediaTypes();
-      _defaultMediaType = _mediaTypes.at({ MFVideoFormat_NV12, 1280, 720, 30 });
+      _defaultMediaType = _mediaTypes.at({ MFVideoFormat_RGB32, 3840, 2160, 30 });
       break;
     case KinectStreamType::Depth:
       AddDepthMediaTypes();
